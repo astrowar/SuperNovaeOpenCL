@@ -1,0 +1,2 @@
+# SuperNovaeOpenCL
+superNovae code
