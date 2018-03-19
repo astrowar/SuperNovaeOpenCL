@@ -3,7 +3,7 @@
 
  
 
-
+#define _CRT_SECURE_NO_WARNINGS
 
 
 #include <cstdio>
@@ -14,6 +14,10 @@
 #include <vector>
 #include <ctime>
 #include <algorithm>
+
+
+#include  "IntegrateFunctions.hpp"
+
 
 #define NP 400
 
@@ -53,45 +57,45 @@ using namespace std;
 //regiao de calculo da massa dos distibuicoes T
 #define Tmin 2.5
 #define Tmax 7.0
-#define ddT  0.2
+#define ddT  0.1
 
 #define sigma_tp 1.0
 
 //  tempo
-#define tpmin 0.2
-#define tpmax 1.2
-#define ddtp 0.4 //2.0
+#define tpmin 0.1
+#define tpmax 1.0
+#define ddtp 0.4 
 
 
 // alpha
-#define Amin 1.1
-#define Amax 8.0
+#define Amin 0.2
+#define Amax 15.0
 #define ddA  0.2
 
 //  eps
 #define epsmin 1.0
-#define epsmax 70.0 // 50.0
-#define ddeps  5.0 // 5.0
+#define epsmax 70.0  
+#define ddeps  5.0  
 
 
 // tau1
 
-#define  tau1min 0.5
-#define  tau1max 15.0  // 30.0
-#define  ddtau1  1.0 // 3.0
+#define  tau1min 1.6
+#define  tau1max 10.0   
+#define  ddtau1  0.2  
 
 
 // tau2
 
 #define  tau2min 0.0
 #define  tau2max 4.0
-#define  ddtau2  5.0
+#define  ddtau2  4.0
 
 
 //Scale parameter
 #define apmin  0.01
 #define apmax  0.4
-#define ddap   0.6
+#define ddap   0.4
 
 
 // Noise's parameters
@@ -351,9 +355,7 @@ double  Integra_6(double ******y, vector<double> x1, vector<double> x2, vector<d
 		soma += (ya + 4 * yb + yc)*(x1[i + 2] - x1[i]);
 		ya = yc;
 	}
-	return soma / 6.0;
-
-
+	return soma / 6.0; 
 }
 
 
@@ -387,7 +389,7 @@ double obs_sample_statistic_err(double mu)
 
 double obs_sample_statistic(double mu, double dm)
 {
-	double soma;
+	double soma = 0;
 
 	return soma;
 }
@@ -882,7 +884,7 @@ double priori1(double alpha, double T, double tp, double ap, double tau1, double
 
 
 	
-	return alpha / (pow(T, 4.0));
+	return  alpha / (  pow(T, 4.0));
 
 	//	return  1.0/ pow(alpha,2)  ;
 	double pAlpha = 1.0 / pow(alpha, 2.0);
@@ -1013,37 +1015,37 @@ int main() {
 	std::vector<LikelihoodParameter> params;
 	std::vector<LikelihoodParameter> paramsBuffer ;
 	LikelihoodParameter max_likelihood_parameter(0,0,0,0,0,0);
-	for (int i1 = 0; i1 < vAlpha.size(); i1++)
+	for (int i1 = 0; i1 < vAlpha.size() ; i1++)
 	{
 
-		for (int i2 = 0; i2 < vTemp.size(); i2++)
-			for (int i3 = 0; i3 < vAp.size(); i3++)
+		 
+		 
 			{  
 
 				params.clear(); //Mantem um cache de memoria do ciclo anterior
 				paramsBuffer.clear();
+				for (int i2 = 0; i2 < vTemp.size(); i2++)
+				for (int i3 = 0; i3 < vAp.size(); i3++)
 				for (int i4 = 0; i4 < vtp.size(); i4++)
 					for (int i5 = 0; i5 < vtau1.size(); i5++)
 						for (int i6 = 0; i6 < vtau2.size(); i6++)
 						{
 							//printf(" %i %i %i %i %i \n", i1,i2,i3,i4,i5);
-
-							
 							//Lk[i1][i2][i3][i4][i5][i6] = Likelihood_combined(vAlpha[i1], vTemp[i2], vAp[i3], vtp[i4], vtau1[i5], vtau2[i6]);
 							//printf("%6.2f %6.2f %6.2f %6.2f  %6.2f %6.2f : %15.12e \n", vAlpha[i1], vTemp[i2], vAp[i3], vtp[i4], vtau1[i5], vtau2[i6], Lk[i1][i2][i3][i4][i5][i6]);
-
 							 //                 _alpha,      _T,       _ap,       _tp,     _tau1,      _tau2
 							paramsBuffer.emplace_back(vAlpha[i1], vTemp[i2], vAp[i3], vtp[i4], vtau1[i5], vtau2[i6]);
-							if (paramsBuffer.size() >= 1024 * 8 )
+							if (paramsBuffer.size() >= 1024 * 16 )
 							{
 								computeParams(paramsBuffer);params.insert(params.end(), paramsBuffer.begin(), paramsBuffer.end()); paramsBuffer.clear();
-							 
 							}
 
 						}
 				computeParams(paramsBuffer); params.insert(params.end(), paramsBuffer.begin(), paramsBuffer.end()); paramsBuffer.clear();
 				 
 				int iParam = 0;
+				for (int i2 = 0; i2 < vTemp.size(); i2++)
+				for (int i3 = 0; i3 < vAp.size(); i3++)
 				for (int i4 = 0; i4 < vtp.size(); i4++)
 					for (int i5 = 0; i5 < vtau1.size(); i5++)
 						for (int i6 = 0; i6 < vtau2.size(); i6++)
@@ -1068,11 +1070,11 @@ int main() {
 		printf(" %i  %i   restam %4.1f  minutos \n", i1, vAlpha.size(), (vAlpha.size() - (i1 + 1))*(((t_atual - t_inicial) / 60.0) / (i1 + 1)));
 	 
 	}
+ 
+ 
 
-
-
-	predi = Integra_6(Lk, vAlpha, vTemp, vAp, vtp, vtau1, vtau2);
-
+ 
+ 
 
 	// Normaliza a preditivTemp, aplica a priori, e translada as matrizes
 
@@ -1104,72 +1106,147 @@ int main() {
 	FILE *fmm;
 
 
-	fmm = fopen("parameters.dat", "w+");
-	fprintf(fmm,"Max Likehood Parameter:%g\n alpha %6.2f\n T %6.2f\n Tp %6.2f\nAmpliture %6.2f\n Tau 1 %6.2f\n Tau 2%6.2f \n ", max_likelihood_parameter.result,
-		max_likelihood_parameter.alpha , max_likelihood_parameter.T,
-		max_likelihood_parameter.tp,
-		max_likelihood_parameter.ap,
-		max_likelihood_parameter.tau1,max_likelihood_parameter.tau2);
-
-	fclose(fmm);
+ 
 
 	printf("Finalizado\n ");
+	vAlpha.push_back(vAlpha.back() + ddA);
+	vTemp.push_back(vTemp.back() + ddT);
+	vAp.push_back(vAp.back() + ddap);
+	vtp.push_back(vtp.back() + ddtp);
+	vtau1.push_back(vtau1.back() + ddtau1);
+	vtau2.push_back(vtau2.back() + ddtau2);
 
 
-	fmm = fopen("Lat.dat", "w+");
+
+	predi = Integra_6n(Lk, vAlpha, vTemp, vAp, vtp, vtau1, vtau2);
+	printf("predi Value %g \n", predi);
 
 
-	for (int i1 = 0; i1 < vAlpha.size(); i1++)
+	fmm = fopen("Lat.dat", "w+"); 
+	for (int i1 = 0; i1 < vAlpha.size()-1; i1++)
 	{
-		for (int i2 = 0; i2 < vTemp.size(); i2++)
+		for (int i2 = 0; i2 < vTemp.size()-1; i2++)
 
 		{
-			double soma = 0;
+ 
 
-
-			for (int i3 = 0; i3 < vAp.size(); i3++)
-				for (int i4 = 0; i4 < vtp.size(); i4++)
-					for (int i5 = 0; i5 < vtau1.size(); i5++)
-						for (int i6 = 0; i6 < vtau2.size(); i6++)
-							soma += ddap * ddtp * ddtau1 * ddtau2 * Lk[i1][i2][i3][i4][i5][i6];
-
+			const double soma = Integra_6n(Lk ,i1, i2, 0, vtp, vtau1, vtau2);
 			fprintf(fmm, "%f %f %g \n", vAlpha[i1], vTemp[i2], soma);
 
-		}
-
+		} 
 		fprintf(fmm, "\n");
 	}
-	 
 	fclose(fmm);
 
 
 
-	fmm = fopen("tau12.dat", "w+");
 
 
-	for (int i5 = 0; i5 < vtau1.size(); i5++)
+
+
+	double alpha_max = 0;
+	double alpha_val = -1;
+	fmm = fopen("Lalpha.dat", "w+");
+	for (int i1 = 0; i1 < vAlpha.size()-1; i1++)
 	{
-		for (int i6 = 0; i6 < vtau2.size(); i6++)
+		double soma = 0; 
+			for (int i2 = 0; i2 < vTemp.size()-1; i2++)
+			  for (int i3 = 0; i3 < vAp.size()-1; i3++)
+				for (int i4 = 0; i4 < vtp.size()-1; i4++)
+					for (int i5 = 0; i5 < vtau1.size()-1; i5++)
+						for (int i6 = 0; i6 < vtau2.size()-1; i6++)							 
+							soma += ddT* ddap * ddtp * ddtau1 * ddtau2 * Lk[i1][i2][i3][i4][i5][i6];
+
+		const double nsoma = Integra_6n(Lk, i1, vTemp, vAp, vtp, vtau1, vtau2)/ predi;
+		fprintf(fmm, "%f  %g %g\n", vAlpha[i1],   nsoma , soma);
+		if (nsoma > alpha_max)
+		{
+			alpha_max = nsoma;
+			alpha_val = vAlpha[i1];
+		}
+	}
+	fclose(fmm);
+
+	double temp_max = 0;
+	double temp_val = -1;
+	fmm = fopen("LTemp.dat", "w+");	
+	for (int i2 = 0; i2 < vTemp.size()-1; i2++)
+	{
+		double soma = 0;
+		for (int i1 = 0; i1 < vAlpha.size()-1; i1++)
+			for (int i3 = 0; i3 < vAp.size()-1; i3++)
+				for (int i4 = 0; i4 < vtp.size()-1; i4++)
+					for (int i5 = 0; i5 < vtau1.size()-1; i5++)
+						for (int i6 = 0; i6 < vtau2.size()-1; i6++)
+							soma += ddA * ddap * ddtp * ddtau1 * ddtau2 * Lk[i1][i2][i3][i4][i5][i6];
+		
+		
+		const double nsoma = Integra_6n(Lk, vAlpha, i2, vAp, vtp, vtau1, vtau2)/ predi;
+		fprintf(fmm, "%f  %g  %g\n", vTemp[i2], nsoma, soma);
+		if (nsoma > temp_max)
+		{
+			temp_max = nsoma;
+			temp_val = vTemp[i2];
+		}
+	}
+	fclose(fmm);
+
+
+
+
+	double tau1_max = 0;
+	double tau1_val = -1;
+	fmm = fopen("LTau1.dat", "w+"); 
+	for (int i5 = 0; i5 < vtau1.size() - 1; i5++)
+	{
+		const double nsoma = Integra_6n(Lk, vAlpha, vTemp, vAp, vtp, i5, vtau2)/predi;
+		fprintf(fmm, "%f   %g \n", vtau1[i5], nsoma);
+		if (nsoma > tau1_max)
+		{
+			tau1_max = nsoma;
+			tau1_val = vtau1[i5];
+		}
+	}
+	fclose(fmm);
+
+
+	fmm = fopen("parameters.dat", "w+");
+	fprintf(fmm, "Max Likehood Parameter:%g\n alpha %6.2f\n T %6.2f\n Tp %6.2f\nAmpliture %6.2f\n Tau 1 %6.2f\n Tau 2%6.2f \n", max_likelihood_parameter.result,
+		max_likelihood_parameter.alpha, max_likelihood_parameter.T,
+		max_likelihood_parameter.tp,
+		max_likelihood_parameter.ap,
+		max_likelihood_parameter.tau1, max_likelihood_parameter.tau2);
+
+	fprintf(fmm, "best-fit  alpha %f \n", alpha_val);
+	fprintf(fmm, "best-fit  T     %f \n", temp_val);
+	fprintf(fmm, "best-fit  Tau1  %f \n", tau1_val);
+	fclose(fmm);
+
+
+
+	fmm = fopen("tau12.dat", "w+"); 
+
+	for (int i5 = 0; i5 < vtau1.size()-1; i5++)
+	{
+		for (int i6 = 0; i6 < vtau2.size()-1; i6++)
 
 		{
 			double soma = 0;
-			for (int i1 = 0; i1 < vAlpha.size(); i1++)
-				for (int i2 = 0; i2 < vTemp.size(); i2++)
-					for (int i3 = 0; i3 < vAp.size(); i3++)
-						for (int i4 = 0; i4 < vtp.size(); i4++)
-
+			for (int i1 = 0; i1 < vAlpha.size()-1; i1++)
+				for (int i2 = 0; i2 < vTemp.size()-1; i2++)
+					for (int i3 = 0; i3 < vAp.size()-1; i3++)
+						for (int i4 = 0; i4 < vtp.size()-1; i4++)
 						{
 							soma += ddap * ddtp * ddA* ddT*   Lk[i1][i2][i3][i4][i5][i6];
 						}
 			fprintf(fmm, "%f %f %g \n", vtau1[i5], vtau2[i6], soma);
 		}
-
 		fprintf(fmm, "\n");
 	}
-
 	fclose(fmm);
 
 
+ 
 
 
 
@@ -1179,20 +1256,22 @@ int main() {
 
 
 
-	for (int i4 = 0; i4 < vtp.size(); i4++)
+	for (int i4 = 0; i4 < vtp.size()-1; i4++)
 	{
-		for (int i3 = 0; i3 < vAp.size(); i3++)
+
+		double nsoma = Integra_6n(Lk, vAlpha, vTemp, vAp, i4, vtau1, vtau2);
+		for (int i3 = 0; i3 < vAp.size()-1; i3++)
 		{
 			double soma = 0;
-			for (int i6 = 0; i6 < vtau2.size(); i6++)
-				for (int i5 = 0; i5 < vtau1.size(); i5++)
-					for (int i2 = 0; i2 < vTemp.size(); i2++)
-						for (int i1 = 0; i1 < vAlpha.size(); i1++)
+			for (int i6 = 0; i6 < vtau2.size()-1; i6++)
+				for (int i5 = 0; i5 < vtau1.size()-1; i5++)
+					for (int i2 = 0; i2 < vTemp.size()-1; i2++)
+						for (int i1 = 0; i1 < vAlpha.size()-1; i1++)
 						{
 							soma += ddtau1 * ddtau2*ddT * ddA * Lk[i1][i2][i3][i4][i5][i6];
 						}
 
-			fprintf(fmm, "%f %f %g \n", vtp[i4], vAp[i3], soma);
+			fprintf(fmm, "%f %f %g (%g)\n", vtp[i4], vAp[i3], soma, nsoma);
 
 		}
 		fprintf(fmm, "\n");

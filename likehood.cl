@@ -49,8 +49,8 @@ real max(real a, real b);
 #define NEPS 64
 
 #define epsmin 1.0
-#define epsmax 40.0 // 50.0
-#define ddeps   0.2 // 5.0
+#define epsmax 90.0 // 50.0
+#define ddeps   0.1 // 5.0
 
 
 
@@ -75,20 +75,20 @@ real max(real a, real b);
 //Kamikande events:
 
 
-const number    tk[17] = { 0.0, 0.0, 0.107, 0.303, 0.324, 0.507, 0.686, 1.541, 1.728, 1.915, 9.219, 10.433, 12.439, 17.641, 20.257, 21.355, 23.814 }; // times of events;
-const number    Ek[17] = { 0.0, 20.0, 13.5, 7.5, 9.2, 12.8, 6.3, 35.4, 21, 19.8, 8.6, 13, 8.9, 6.5, 5.4, 4.6, 6.5 };   // energy of events;
-const number    Sigmak[17] = { 0.0, 2.9, 3.2, 2.0, 2.7, 2.9, 1.7, 8, 4.2, 3.2, 2.7, 2.6, 1.9, 1.6, 1.4, 1.3, 1.6 }; // standard deviation by events;
-const number    Bk[17] = { 1, 1.6e-5, 1.9e-3, 2.9e-2, 1.2e-2, 2.1e-3, 3.7e-2, 4.5e-5, 8.2e-5, 1.5e-5,            // detector's noise;
-1.5e-2, 1.9e-3, 1.6e-2, 3.8e-2, 2.9e-2, 2.8e-2, 3.8e-2 };
+//const number    tk[17] = { 0.0, 0.0, 0.107, 0.303, 0.324, 0.507, 0.686, 1.541, 1.728, 1.915, 9.219, 10.433, 12.439, 17.641, 20.257, 21.355, 23.814 }; // times of events;
+//const number    Ek[17] = { 0.0, 20.0, 13.5, 7.5, 9.2, 12.8, 6.3, 35.4, 21, 19.8, 8.6, 13, 8.9, 6.5, 5.4, 4.6, 6.5 };   // energy of events;
+//const number    Sigmak[17] = { 0.0, 2.9, 3.2, 2.0, 2.7, 2.9, 1.7, 8, 4.2, 3.2, 2.7, 2.6, 1.9, 1.6, 1.4, 1.3, 1.6 }; // standard deviation by events;
+//const number    Bk[17] = { 1, 1.6e-5, 1.9e-3, 2.9e-2, 1.2e-2, 2.1e-3, 3.7e-2, 4.5e-5, 8.2e-5, 1.5e-5,            // detector's noise;
+//1.5e-2, 1.9e-3, 1.6e-2, 3.8e-2, 2.9e-2, 2.8e-2, 3.8e-2 };
 
 
 // IMB events:
 
-const number    timb[9] = { 0.0, 0.0, 0.412, 0.650, 1.141, 1.562, 2.684, 5.010, 5.582 };
-const number    Eimb[9] = { 0,38,37,28,39,36,36,19,22 }; // energy of events;
-const number     Sigmaimb[9] = { 0,7,7 ,6,7,9, 6,5,5 };      // standard deviation by events;
-const number    Bimb[9] = { 0,0,0,0,0,0,0,0,0 };         // detector's noise;
-
+//const number    timb[9] = { 0.0, 0.0, 0.412, 0.650, 1.141, 1.562, 2.684, 5.010, 5.582 };
+//const number    Eimb[9] = { 0,38,37,28,39,36,36,19,22 }; // energy of events;
+//const number     Sigmaimb[9] = { 0,7,7 ,6,7,9, 6,5,5 };      // standard deviation by events;
+//const number    Bimb[9] = { 0,0,0,0,0,0,0,0,0 };         // detector's noise;
+//
 
 												// Defined functions and matrixes:
 
@@ -208,7 +208,7 @@ number cov_gauss(number x1, number q1, number x2, number q2)
 
 number f_fermi(number eps,   number T )
 {
-	if (T < 0.01) return 0;
+	 if (T < 0.01) return 0;
 	//return     1.0 / (exp((E) / T) + 1.0);
 	return 1.0 / (exp((eps + Q) / T) + 1.0);
 
@@ -300,7 +300,11 @@ real LikelihoodK(number alpha, number T, PressSchecter tmp, real *LMax, __local 
 
 	
  
-
+	const number    tk[17] = { 0.0, 0.0, 0.107, 0.303, 0.324, 0.507, 0.686, 1.541, 1.728, 1.915, 9.219, 10.433, 12.439, 17.641, 20.257, 21.355, 23.814 }; // times of events;
+	const number    Ek[17] = { 0.0, 20.0, 13.5, 7.5, 9.2, 12.8, 6.3, 35.4, 21, 19.8, 8.6, 13, 8.9, 6.5, 5.4, 4.6, 6.5 };   // energy of events;
+	const number    Sigmak[17] = { 0.0, 2.9, 3.2, 2.0, 2.7, 2.9, 1.7, 8, 4.2, 3.2, 2.7, 2.6, 1.9, 1.6, 1.4, 1.3, 1.6 }; // standard deviation by events;
+	const number    Bk[17] = { 1, 1.6e-5, 1.9e-3, 2.9e-2, 1.2e-2, 2.1e-3, 3.7e-2, 4.5e-5, 8.2e-5, 1.5e-5,            // detector's noise;
+		1.5e-2, 1.9e-3, 1.6e-2, 3.8e-2, 2.9e-2, 2.8e-2, 3.8e-2 };
 
 
 	//if (get_local_id(0) == 0)
@@ -398,8 +402,8 @@ real LikelihoodK(number alpha, number T, PressSchecter tmp, real *LMax, __local 
 	 }
 
 
-	ddtp = 0.3;
-	for (ti = tmp.tp ; ti <= max((number)timeK, (number)(tmp.tp + 4 * tmp.tau1)); ti = ti + ddtp)
+	ddtp = 0.2;
+	for (ti = tmp.tp ; ti <= max(timeK, tmp.tp + 6.0*tmp.tau1) ; ti = ti + ddtp)
 	{
 		number Tj = Temp(tk[i], T, tmp);
 		number radius = r(ti, Tj, tmp);
@@ -499,6 +503,12 @@ number StepIMB(number eps) {
 
 number perParticleIMB(int i ,number eps , number alpha, number T, PressSchecter tmp )
 {
+	const number    timb[9] = { 0.0, 0.0, 0.412, 0.650, 1.141, 1.562, 2.684, 5.010, 5.582 };
+	const number    Eimb[9] = { 0,38,37,28,39,36,36,19,22 }; // energy of events;
+	const number     Sigmaimb[9] = { 0,7,7 ,6,7,9, 6,5,5 };      // standard deviation by events;
+	 const number    Bimb[9] = { 0,0,0,0,0,0,0,0,0 };         // detector's noise;
+
+
 	number Tj = Temp(timb[i], T, tmp);
 	number radius = r(timb[i], Tj, tmp);
 	number y1 = StepIMB(eps);
@@ -513,6 +523,15 @@ number perParticleIMB(int i ,number eps , number alpha, number T, PressSchecter 
 
 
 number LikelihoodIMB(number alpha, number T, PressSchecter tmp, real* LMax, __local number eps_value[NEPS], __local number      etabarIMB_value[NEPS], __local number      noiseIMB_value[NEPS]) {
+
+
+	const number    timb[9] = { 0.0, 0.0, 0.412, 0.650, 1.141, 1.562, 2.684, 5.010, 5.582 };
+	const number    Eimb[9] = { 0,38,37,28,39,36,36,19,22 }; // energy of events;
+	const number     Sigmaimb[9] = { 0,7,7 ,6,7,9, 6,5,5 };      // standard deviation by events;
+	const number    Bimb[9] = { 0,0,0,0,0,0,0,0,0 };         // detector's noise;
+
+
+
 
 	int  i;
 	number soma;
@@ -544,7 +563,7 @@ number LikelihoodIMB(number alpha, number T, PressSchecter tmp, real* LMax, __lo
 	number de = (epsmax - epsmin) / NEPS;
 	for (ti = 0; ti <= tmp.tp; ti = ti + tmp.tp / 2.0)
 	{
-		number Tj = Temp(tk[i], T, tmp);
+		number Tj = Temp(timb[i], T, tmp);
 		number radius = r(timb[i], Tj, tmp);
 		eps = eps_value[0];
 		number y1 = (etabarIMB_value[0] * (Cn*Rcol(eps, alpha, Tj, Mk, radius) + noiseIMB_value[0]));
@@ -561,10 +580,10 @@ number LikelihoodIMB(number alpha, number T, PressSchecter tmp, real* LMax, __lo
 	}
 
 
-	number ddtp = 0.3;
-	for (ti = tmp.tp; ti <= max((number)timeIMB, (number)(tmp.tp + 4*tmp.tau1)); ti = ti + ddtp)
+	number ddtp = 0.2;
+	for (ti = tmp.tp; ti <=  max(timeIMB, tmp.tp + 6.0*tmp.tau1); ti = ti + ddtp)
 	{
-		number Tj = Temp(tk[i], T, tmp);
+		number Tj = Temp(timb[i], T, tmp);
 		number radius = r(timb[i], Tj, tmp);
 
 		eps = eps_value[0];
@@ -663,9 +682,9 @@ real Likelihood_combined(real alpha, real T, real ap, real tp, real tau1, real t
 		{
 			number eps = epsmin + de *i;
 			etabarK_value[i] = etabarK(eps);
-			noiseK_value[i] = noiseK(eps);
+			noiseK_value[i] =  noiseK(eps);
 			etabarIMB_value[i] = etabarIMB(eps);
-			noiseIMB_value[i] = noiseIMB(eps);
+			noiseIMB_value[i] =  noiseIMB(eps);
 			eps_value[i] = eps;
 		}
 	}
