@@ -17,7 +17,7 @@ set rmargin at screen 0.8
 set bmargin at screen 0.2
 set tmargin at screen 0.9
 
-  set yrange [2:6] 
+  set yrange [2:8] 
   set xrange [0.2:15] 
   set logscale x
   set xtics 0.1,10,16

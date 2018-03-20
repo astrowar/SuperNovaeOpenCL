@@ -1,4 +1,4 @@
-set output 'Lap.png'
+set output 'Ltt.png'
 set term png  
 set view map
 unset key
@@ -17,8 +17,8 @@ set rmargin at screen 0.8
 set bmargin at screen 0.2
 set tmargin at screen 0.9
 
-set xlabel "Segund Pico [s]"
-set ylabel "Amplitute"
+set xlabel "Temp "
+set ylabel "tau 1"
 
-splot   "Lap.dat"  w  l 
+splot   "LTT.dat"  w  l 
  

@@ -46,9 +46,9 @@ real max(real a, real b);
 #define Dump(  ff , x, x1 , x2 , dx )  for(x = (x1) ; x <= (x2) ;x+=(dx)   ){ printf(">%f %f \n",x, ( ff ) );};
 
 #define H  6.0
-#define NEPS 64
+#define NEPS 256
 
-#define epsmin 1.0
+#define epsmin 0.1
 #define epsmax 90.0 // 50.0
 #define ddeps   0.1 // 5.0
 
@@ -151,11 +151,9 @@ typedef struct PressSchecter
 // Function type Press - Schecter
 number Temp(number tu, number T, PressSchecter tmp) {
 
-	 
-
+	  
 	if (tu > tmp.tp)
-	{
-		 
+	{ 
 		number u = (tu - tmp.tp) / (4.0*tmp.tau1);
 		if (u > 10.0) return 0.0;
 		return  T* exp(-u);
@@ -208,7 +206,7 @@ number cov_gauss(number x1, number q1, number x2, number q2)
 
 number f_fermi(number eps,   number T )
 {
-	 if (T < 0.01) return 0;
+	// if (T < 0.1) return 0;
 	//return     1.0 / (exp((E) / T) + 1.0);
 	return 1.0 / (exp((eps + Q) / T) + 1.0);
 
@@ -245,7 +243,7 @@ number Rcol(number eps, number alpha,   number T , number MMeff ,number radius )
 
 	kp = kappa(eps);
 	if (kp <= 0.0 ) return 0.0;
-	saida = (1.22e-5) * pow(alpha_t, (number) 2.0) * MMeff * (pow((number)(eps + Q), (number)4.0)) * fm * kp * pow(radius, (number)2.0);
+	saida = (1.22e-5) * alpha_t*alpha_t * MMeff * (pow((number)(eps + Q), (number)4.0)) * fm * kp * pow(radius, (number)2.0);
 	if (saida <0)  printf((__constant char *)"ERROR Rcol \n");
 	return saida;
 
@@ -384,7 +382,7 @@ real LikelihoodK(number alpha, number T, PressSchecter tmp, real *LMax, __local 
 	 number ddtp = tmp.tp / 2.0;
 	 for (ti = 0; ti <= tmp.tp ; ti = ti + ddtp)
 	 {
-		 number Tj = Temp(tk[i], T, tmp);
+		 number Tj = Temp(0, T, tmp);
 		 number radius = r(ti, Tj, tmp);
 		 eps = eps_value[0];
 		 number y1 = (etabarK_value[0] * (Cn*Rcol(eps, alpha, Tj, Mk, radius) + noiseK_value[0]));
@@ -403,9 +401,10 @@ real LikelihoodK(number alpha, number T, PressSchecter tmp, real *LMax, __local 
 
 
 	ddtp = 0.2;
-	for (ti = tmp.tp ; ti <= max(timeK, tmp.tp + 6.0*tmp.tau1) ; ti = ti + ddtp)
+	//for (ti = tmp.tp ; ti <= max(0* timeK,   (tmp.tp + 4.0*tmp.tau1)) ; ti = ti + ddtp)
+	for (ti = tmp.tp; ti <= 25; ti = ti + ddtp)
 	{
-		number Tj = Temp(tk[i], T, tmp);
+		number Tj = Temp(ti, T, tmp);
 		number radius = r(ti, Tj, tmp);
 		eps = eps_value[0];
 		number y1 = (etabarK_value[0] * (Cn*Rcol(eps, alpha, Tj, Mk, radius) + noiseK_value[0]));
@@ -527,7 +526,7 @@ number LikelihoodIMB(number alpha, number T, PressSchecter tmp, real* LMax, __lo
 
 	const number    timb[9] = { 0.0, 0.0, 0.412, 0.650, 1.141, 1.562, 2.684, 5.010, 5.582 };
 	const number    Eimb[9] = { 0,38,37,28,39,36,36,19,22 }; // energy of events;
-	const number     Sigmaimb[9] = { 0,7,7 ,6,7,9, 6,5,5 };      // standard deviation by events;
+	const number    Sigmaimb[9] = { 0,7,7 ,6,7,9, 6,5,5 };      // standard deviation by events;
 	const number    Bimb[9] = { 0,0,0,0,0,0,0,0,0 };         // detector's noise;
 
 
@@ -563,7 +562,7 @@ number LikelihoodIMB(number alpha, number T, PressSchecter tmp, real* LMax, __lo
 	number de = (epsmax - epsmin) / NEPS;
 	for (ti = 0; ti <= tmp.tp; ti = ti + tmp.tp / 2.0)
 	{
-		number Tj = Temp(timb[i], T, tmp);
+		number Tj = Temp(0, T, tmp);
 		number radius = r(timb[i], Tj, tmp);
 		eps = eps_value[0];
 		number y1 = (etabarIMB_value[0] * (Cn*Rcol(eps, alpha, Tj, Mk, radius) + noiseIMB_value[0]));
@@ -581,10 +580,11 @@ number LikelihoodIMB(number alpha, number T, PressSchecter tmp, real* LMax, __lo
 
 
 	number ddtp = 0.2;
-	for (ti = tmp.tp; ti <=  max(timeIMB, tmp.tp + 6.0*tmp.tau1); ti = ti + ddtp)
+	//for (ti = tmp.tp; ti <=  max( 0*timeIMB,  (tmp.tp + 4.0*tmp.tau1)); ti = ti + ddtp)
+	for (ti = tmp.tp; ti <=  25; ti = ti + ddtp)
 	{
-		number Tj = Temp(timb[i], T, tmp);
-		number radius = r(timb[i], Tj, tmp);
+		number Tj = Temp(ti, T, tmp);
+		number radius = r(ti, Tj, tmp);
 
 		eps = eps_value[0];
 		number y1 = (etabarIMB_value[0] * (Cn*Rcol(eps, alpha, Tj, Mk, radius) + noiseIMB_value[0]));

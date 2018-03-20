@@ -56,21 +56,21 @@ using namespace std;
 
 //regiao de calculo da massa dos distibuicoes T
 #define Tmin 2.5
-#define Tmax 7.0
+#define Tmax 8.0
 #define ddT  0.1
 
 #define sigma_tp 1.0
 
 //  tempo
-#define tpmin 0.1
-#define tpmax 1.0
-#define ddtp 0.4 
+#define tpmin 0.2 
+#define tpmax 0.3
+#define ddtp 1.0 
 
 
 // alpha
 #define Amin 0.2
 #define Amax 15.0
-#define ddA  0.2
+#define ddA  0.3
 
 //  eps
 #define epsmin 1.0
@@ -80,9 +80,9 @@ using namespace std;
 
 // tau1
 
-#define  tau1min 1.6
+#define  tau1min 0.1
 #define  tau1max 10.0   
-#define  ddtau1  0.2  
+#define  ddtau1  0.3  
 
 
 // tau2
@@ -884,11 +884,11 @@ double priori1(double alpha, double T, double tp, double ap, double tau1, double
 
 
 	
-	return  alpha / (  pow(T, 4.0));
+	//return 1.0 / (  pow(alpha, 4.0));
 
 	//	return  1.0/ pow(alpha,2)  ;
-	double pAlpha = 1.0 / pow(alpha, 2.0);
-	double pTemp =  1.0 / pow(T, 4.0) ;
+	const double pAlpha = 1.0 / pow(alpha, 6.0);
+	const double pTemp =  1.0 / pow(T, 6.0) ;
 	//double pTau = 1.0 / (pow(tau1, 0.2) * pow(tau2, 0.2));
 
 
@@ -1050,9 +1050,9 @@ int main() {
 					for (int i5 = 0; i5 < vtau1.size(); i5++)
 						for (int i6 = 0; i6 < vtau2.size(); i6++)
 						{
-							double i_priori1 = priori1(vAlpha[i1], vTemp[i2], vAp[i3], vtp[i4], vtau1[i5], vtau2[i6]);
-							params[iParam].result = i_priori1 * params[iParam].result;
-							Lk[i1][i2][i3][i4][i5][i6] = params[iParam].result;
+							const double i_priori1 = priori1(vAlpha[i1], vTemp[i2], vAp[i3], vtp[i4], vtau1[i5], vtau2[i6]);
+							//params[iParam].result =  params[iParam].result;
+							Lk[i1][i2][i3][i4][i5][i6] = i_priori1 *params[iParam].result;
 																				
 							if (params[iParam].result > Lmax)
 							{
@@ -1252,34 +1252,17 @@ int main() {
 
 
 
-	fmm = fopen("Lap.dat", "w+");
-
-
-
-	for (int i4 = 0; i4 < vtp.size()-1; i4++)
-	{
-
-		double nsoma = Integra_6n(Lk, vAlpha, vTemp, vAp, i4, vtau1, vtau2);
-		for (int i3 = 0; i3 < vAp.size()-1; i3++)
+	fmm = fopen("LTT.dat", "w+"); 
+	for (int i2 = 0; i2 < vTemp.size()-1; i2++)
+	{ 
+		for (int i5 = 0; i5 < vtau1.size()-1; i5++)
 		{
-			double soma = 0;
-			for (int i6 = 0; i6 < vtau2.size()-1; i6++)
-				for (int i5 = 0; i5 < vtau1.size()-1; i5++)
-					for (int i2 = 0; i2 < vTemp.size()-1; i2++)
-						for (int i1 = 0; i1 < vAlpha.size()-1; i1++)
-						{
-							soma += ddtau1 * ddtau2*ddT * ddA * Lk[i1][i2][i3][i4][i5][i6];
-						}
-
-			fprintf(fmm, "%f %f %g (%g)\n", vtp[i4], vAp[i3], soma, nsoma);
+			const double nsoma = Integra_6n(Lk, vAlpha, i2, vAp, vtp, i5, vtau2);
+			fprintf(fmm, "%f %f %g  \n", vTemp[i2], vtau1[i5], nsoma );
 
 		}
 		fprintf(fmm, "\n");
 	}
-
-
-
-
 	fclose(fmm);
 
 
