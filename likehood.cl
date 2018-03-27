@@ -26,7 +26,7 @@ real max(real a, real b);
 #define fk (1.0)
 #define fimb (0.9055)
 #define fb (1.0)
-#define Cn    (1.0/(4 * 3.1416))
+#define Cn    (1.0/(4.0 * 3.1416))
 #define lnVk   14.56
 #define lnVimb  15.73
 #define delt 1.0  //2.3
@@ -46,10 +46,10 @@ real max(real a, real b);
 #define Dump(  ff , x, x1 , x2 , dx )  for(x = (x1) ; x <= (x2) ;x+=(dx)   ){ printf(">%f %f \n",x, ( ff ) );};
 
 #define H  6.0
-#define NEPS 256
+#define NEPS 128
 
 #define epsmin 0.1
-#define epsmax 90.0 // 50.0
+#define epsmax 80.0 // 50.0
 #define ddeps   0.1 // 5.0
 
 
@@ -206,7 +206,7 @@ number cov_gauss(number x1, number q1, number x2, number q2)
 
 number f_fermi(number eps,   number T )
 {
-	// if (T < 0.1) return 0;
+	 if (T < 0.1) return 0;
 	//return     1.0 / (exp((E) / T) + 1.0);
 	return 1.0 / (exp((eps + Q) / T) + 1.0);
 
@@ -232,20 +232,20 @@ number Rcol(number eps, number alpha,   number T , number MMeff ,number radius )
 
 	number fm;
 	number kp;
-	number saida = 0;
+	number saida = 0.0;
 	 
 
 	fm = f_fermi(eps,  T   );
 	if (fm <= 0.0) { return 0.0; }
 	 
-	number alpha_t = get_alpha(alpha,  T );
-
+	number alpha_t =   (get_alpha(alpha, T));
+	 
 
 	kp = kappa(eps);
 	if (kp <= 0.0 ) return 0.0;
 	saida = (1.22e-5) * alpha_t*alpha_t * MMeff * (pow((number)(eps + Q), (number)4.0)) * fm * kp * pow(radius, (number)2.0);
 	if (saida <0)  printf((__constant char *)"ERROR Rcol \n");
-	return saida;
+	return max(saida, (number)0.0);
 
 }
 
@@ -257,7 +257,7 @@ number Rcol(number eps, number alpha,   number T , number MMeff ,number radius )
 number  noiseK(number eps)
 {
 	 
-	return  effK* (gaussian(eps, 6.0, 1.0) + 0.001);
+	return  effK* (gaussian(eps, 6.0, 1.0) +0.001 )  ;
 
 	
 }
@@ -383,7 +383,7 @@ real LikelihoodK(number alpha, number T, PressSchecter tmp, real *LMax, __local 
 	 for (ti = 0; ti <= tmp.tp ; ti = ti + ddtp)
 	 {
 		 number Tj = Temp(0, T, tmp);
-		 number radius = r(ti, Tj, tmp);
+		 number radius = r(0, Tj, tmp);
 		 eps = eps_value[0];
 		 number y1 = (etabarK_value[0] * (Cn*Rcol(eps, alpha, Tj, Mk, radius) + noiseK_value[0]));
 		 for (int i = 0; i < NEPS-1; ++i)
@@ -402,18 +402,18 @@ real LikelihoodK(number alpha, number T, PressSchecter tmp, real *LMax, __local 
 
 	ddtp = 0.2;
 	//for (ti = tmp.tp ; ti <= max(0* timeK,   (tmp.tp + 4.0*tmp.tau1)) ; ti = ti + ddtp)
-	for (ti = tmp.tp; ti <= 25; ti = ti + ddtp)
+	for (ti = tmp.tp; ti <= timeEnd; ti = ti + ddtp)
 	{
 		number Tj = Temp(ti, T, tmp);
 		number radius = r(ti, Tj, tmp);
 		eps = eps_value[0];
 		number y1 = (etabarK_value[0] * (Cn*Rcol(eps, alpha, Tj, Mk, radius) + noiseK_value[0]));
 
-		for (int i = 0; i < NEPS; ++i)
+		for (int i = 1; i < NEPS; ++i)
 		{
 			eps = eps_value[i];
 			//number y1 = (etabarK_value[i] * (Cn*Rcol(eps, alpha, Tj, Mk, radius) + noiseK_value[i]));
-			number y2 = (etabarK_value[i + 1] * (Cn*Rcol(eps + de, alpha, Tj, Mk,radius) + noiseK_value[i + 1]));
+			number y2 = (etabarK_value[i  ] * (Cn*Rcol(eps  , alpha, Tj, Mk,radius) + noiseK_value[i ]));
 			termo1 += de* (ddtp)* (y1 + y2) / 2.0;
 			y1 = y2;
 		//	termo1 += de* ddtp*(etabarK_value[i] * (Cn*Rcol(eps, alpha, Tj, Mk) + noiseK_value[i]));
@@ -435,19 +435,21 @@ real LikelihoodK(number alpha, number T, PressSchecter tmp, real *LMax, __local 
 		e2 = min(epsmax, Ek[i] + H * Sigmak[i]);
 		number dSigma = Sigmak[i] / 2.0;
 		number Tj = Temp(tk[i], T, tmp);
-		number radius = r(ti, Tj, tmp);
+		number radius = r(tk[i], Tj, tmp);
 		//Integra(termo2, RDet(eps) , eps, e1, e2, dSigma);
 		
 		//Integra(termo2, (StepK(eps)* Cn * lnVk * gaussian(eps, Ek[i], Sigmak[i])*Cn*(Rcol(eps, alpha,   Tj,Mk) + 1.0*noiseK(eps))), eps, e1, e2, dSigma);
 		Integra(termo2, (StepK(eps)* Cn * lnVk * gaussian(eps, Ek[i], Sigmak[i])*Cn*(Rcol(eps, alpha, Tj, Mk,radius) + 1.0*noiseK(eps))), eps, e1, e2, dSigma);
-		// prod = prod * ( Bk[i] + termo2);
-		prod = prod  + log (Bk[i] + termo2);
+		prod = prod + log(max( 1e-20, Bk[i] + termo2));
+		//prod = prod  + log (Bk[i] + termo2 + 0.001);
 	}
-
+	 
 	//double e_term = -1.0 * delt * termo1 + prod;
 	//soma = exp(e_term);
-	double e_term = -1.0 * delt *  termo1 + prod  ;
-	soma = exp(e_term)   ;
+	double e_term = -1.0   *delt *  5*(termo1)      ;
+	soma = exp(e_term + prod)    ;
+ 
+	 
 
 	if (soma > (*LMax)) *LMax = soma;
 	return soma;
@@ -581,7 +583,7 @@ number LikelihoodIMB(number alpha, number T, PressSchecter tmp, real* LMax, __lo
 
 	number ddtp = 0.2;
 	//for (ti = tmp.tp; ti <=  max( 0*timeIMB,  (tmp.tp + 4.0*tmp.tau1)); ti = ti + ddtp)
-	for (ti = tmp.tp; ti <=  25; ti = ti + ddtp)
+	for (ti = tmp.tp; ti <= timeEnd; ti = ti + ddtp)
 	{
 		number Tj = Temp(ti, T, tmp);
 		number radius = r(ti, Tj, tmp);
@@ -617,19 +619,21 @@ number LikelihoodIMB(number alpha, number T, PressSchecter tmp, real* LMax, __lo
 		eps_range_begin = max(eps_range_begin, epsmin);
 		eps_range_end = min(eps_range_end, epsmax);
 
-		Integra(termo2, perParticleIMB(i, eps ,     alpha,   T, tmp) , eps, eps_range_begin, eps_range_end, Sigmaimb[i] / 2.0);
+		Integra(termo2, perParticleIMB(i, eps ,     alpha,   T, tmp) , eps, eps_range_begin, eps_range_end, Sigmaimb[i] / 3.0);
 		//Integra(termo2, StepIMB(eps) *Cn*lnVimb* gaussian(eps, Eimb[i], Sigmaimb[i])*(Cn*Rcol(eps, alpha, timb[i], T, ap, tp, tau1, tau2,Mimb) + noiseIMB(eps)), eps, epsmin, epsmax, Sigmaimb[i] / 2.0);
 
-		//prod = prod * termo2;
-		//prod = prod * (Bimb[i] + termo2);
-		prod = prod + log(Bimb[i] + termo2);
+		// prod = prod * termo2;
+		number dprod = Bimb[i] + termo2;
+		dprod = max(dprod, (number)1e-20);
+		prod = prod + log(dprod);
+		//prod = prod + log( 1e-4 +  Bimb[i] + termo2)  ;
 	}
 	 
 	
 
  
 	//soma = exp(-1.0 * delt * timeIMB * termo1) * prod;
-	soma = exp(-1.0 * delt *   termo1 + prod);
+	soma = exp(-1.0 * delt *  timeIMB* termo1 + prod);
 	//soma = exp(-termo1 +  prod);
 
 	if (soma > (*LMax) ) *LMax = soma;
@@ -654,9 +658,10 @@ real Likelihood_combined(real alpha, real T, real ap, real tp, real tau1, real t
 	real LMax = 0.0;
 
 	real LK= LikelihoodK(alpha, T, psch, &LMax,eps_value,etabarK_value, noiseK_value);
-	//return LK;
-	real LIMB = LikelihoodIMB(alpha, T, psch, &LMax, eps_value, etabarIMB_value, noiseIMB_value);
-	 return LK*LIMB;
+	 
+	 real LIMB = LikelihoodIMB(alpha, T, psch, &LMax, eps_value, etabarIMB_value, noiseIMB_value);
+	//return LIMB;
+	  return LK*LIMB;
 	
  
 }

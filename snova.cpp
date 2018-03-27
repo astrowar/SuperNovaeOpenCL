@@ -55,7 +55,7 @@ using namespace std;
 #define H  6.0
 
 //regiao de calculo da massa dos distibuicoes T
-#define Tmin 2.5
+#define Tmin 2.0
 #define Tmax 8.0
 #define ddT  0.1
 
@@ -69,8 +69,8 @@ using namespace std;
 
 // alpha
 #define Amin 0.2
-#define Amax 15.0
-#define ddA  0.3
+#define Amax 20.0
+#define ddA  0.2
 
 //  eps
 #define epsmin 1.0
@@ -81,8 +81,8 @@ using namespace std;
 // tau1
 
 #define  tau1min 0.1
-#define  tau1max 10.0   
-#define  ddtau1  0.3  
+#define  tau1max 15.0   
+#define  ddtau1  0.2  
 
 
 // tau2
@@ -883,12 +883,12 @@ LikelihoodParameter::LikelihoodParameter(real _alpha, real _T, real _ap, real _t
 double priori1(double alpha, double T, double tp, double ap, double tau1, double tau2) {
 
 
-	
-	//return 1.0 / (  pow(alpha, 4.0));
+	 
+	// return 1.0 / (  pow(T, 2.0));
 
 	//	return  1.0/ pow(alpha,2)  ;
-	const double pAlpha = 1.0 / pow(alpha, 6.0);
-	const double pTemp =  1.0 / pow(T, 6.0) ;
+	const double pAlpha = 1.0 / pow(alpha, 1.0);
+	const double pTemp =  1.0 / pow(T, 2.0) ;
 	//double pTau = 1.0 / (pow(tau1, 0.2) * pow(tau2, 0.2));
 
 
