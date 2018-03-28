@@ -151,7 +151,10 @@ typedef struct PressSchecter
 // Function type Press - Schecter
 number Temp(number tu, number T, PressSchecter tmp) {
 
-	  
+	
+	if (tu <= tmp.tp) return T;
+	return 0.0;
+
 	if (tu > tmp.tp)
 	{ 
 		number u = (tu - tmp.tp) / (4.0*tmp.tau1);
@@ -206,7 +209,7 @@ number cov_gauss(number x1, number q1, number x2, number q2)
 
 number f_fermi(number eps,   number T )
 {
-	 if (T < 0.1) return 0;
+	 //if (T < 0.1) return 0;
 	//return     1.0 / (exp((E) / T) + 1.0);
 	return 1.0 / (exp((eps + Q) / T) + 1.0);
 
@@ -280,7 +283,7 @@ number StepK(number eps) {
 
 
 	if (eps >  5.0) {
-		return 1;
+		return 1.0;
 	}
 	else { return 0.0; }
 }
@@ -402,7 +405,7 @@ real LikelihoodK(number alpha, number T, PressSchecter tmp, real *LMax, __local 
 
 	ddtp = 0.2;
 	//for (ti = tmp.tp ; ti <= max(0* timeK,   (tmp.tp + 4.0*tmp.tau1)) ; ti = ti + ddtp)
-	for (ti = tmp.tp; ti <= timeEnd; ti = ti + ddtp)
+	for (ti = tmp.tp; ti <= timeK; ti = ti + ddtp)
 	{
 		number Tj = Temp(ti, T, tmp);
 		number radius = r(ti, Tj, tmp);
@@ -433,21 +436,25 @@ real LikelihoodK(number alpha, number T, PressSchecter tmp, real *LMax, __local 
 		termo2 = 0.0;
 		e1 = max(epsmin, Ek[i] - H * Sigmak[i]);
 		e2 = min(epsmax, Ek[i] + H * Sigmak[i]);
-		number dSigma = Sigmak[i] / 2.0;
+		number dSigma = Sigmak[i] / 4.0;
 		number Tj = Temp(tk[i], T, tmp);
 		number radius = r(tk[i], Tj, tmp);
-		//Integra(termo2, RDet(eps) , eps, e1, e2, dSigma);
-		
+		//Integra(termo2, RDet(eps) , eps, e1, e2, dSigma);		
 		//Integra(termo2, (StepK(eps)* Cn * lnVk * gaussian(eps, Ek[i], Sigmak[i])*Cn*(Rcol(eps, alpha,   Tj,Mk) + 1.0*noiseK(eps))), eps, e1, e2, dSigma);
 		Integra(termo2, (StepK(eps)* Cn * lnVk * gaussian(eps, Ek[i], Sigmak[i])*Cn*(Rcol(eps, alpha, Tj, Mk,radius) + 1.0*noiseK(eps))), eps, e1, e2, dSigma);
-		prod = prod + log(max( 1e-20, Bk[i] + termo2));
+		//prod = prod + log(max( 1e-99, Bk[i] + termo2));
+		prod = prod + log(max(1e-99,  Bk[i] +  termo2));
 		//prod = prod  + log (Bk[i] + termo2 + 0.001);
 	}
 	 
 	//double e_term = -1.0 * delt * termo1 + prod;
 	//soma = exp(e_term);
-	double e_term = -1.0   *delt *  5*(termo1)      ;
-	soma = exp(e_term + prod)    ;
+	double e_term = -1.0   *delt *  4.0* (termo1)      ;
+	e_term = e_term +  prod;
+	
+	e_term = min(e_term, (double)99.0);
+	e_term = max(e_term, (double )-99.0);
+	soma = exp(e_term  )    ;
  
 	 
 
@@ -623,8 +630,8 @@ number LikelihoodIMB(number alpha, number T, PressSchecter tmp, real* LMax, __lo
 		//Integra(termo2, StepIMB(eps) *Cn*lnVimb* gaussian(eps, Eimb[i], Sigmaimb[i])*(Cn*Rcol(eps, alpha, timb[i], T, ap, tp, tau1, tau2,Mimb) + noiseIMB(eps)), eps, epsmin, epsmax, Sigmaimb[i] / 2.0);
 
 		// prod = prod * termo2;
-		number dprod = Bimb[i] + termo2;
-		dprod = max(dprod, (number)1e-20);
+		number dprod =    Bimb[i] + termo2;
+		dprod = max(dprod, (number)1e-99);
 		prod = prod + log(dprod);
 		//prod = prod + log( 1e-4 +  Bimb[i] + termo2)  ;
 	}
@@ -633,7 +640,9 @@ number LikelihoodIMB(number alpha, number T, PressSchecter tmp, real* LMax, __lo
 
  
 	//soma = exp(-1.0 * delt * timeIMB * termo1) * prod;
-	soma = exp(-1.0 * delt *  timeIMB* termo1 + prod);
+	number inner_exp = -1.0 * delt *  timeIMB*   termo1 + prod;
+	inner_exp =  max(inner_exp, (number) -100.0);
+	soma = exp(inner_exp);
 	//soma = exp(-termo1 +  prod);
 
 	if (soma > (*LMax) ) *LMax = soma;
@@ -658,7 +667,7 @@ real Likelihood_combined(real alpha, real T, real ap, real tp, real tau1, real t
 	real LMax = 0.0;
 
 	real LK= LikelihoodK(alpha, T, psch, &LMax,eps_value,etabarK_value, noiseK_value);
-	 
+	//return LK;
 	 real LIMB = LikelihoodIMB(alpha, T, psch, &LMax, eps_value, etabarIMB_value, noiseIMB_value);
 	//return LIMB;
 	  return LK*LIMB;

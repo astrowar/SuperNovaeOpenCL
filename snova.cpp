@@ -57,20 +57,20 @@ using namespace std;
 //regiao de calculo da massa dos distibuicoes T
 #define Tmin 2.0
 #define Tmax 8.0
-#define ddT  0.1
+#define ddT  0.05
 
 #define sigma_tp 1.0
 
 //  tempo
 #define tpmin 0.2 
-#define tpmax 0.3
-#define ddtp 1.0 
+#define tpmax 15.3
+#define ddtp  0.2 
 
 
 // alpha
 #define Amin 0.2
 #define Amax 20.0
-#define ddA  0.2
+#define ddA  0.02
 
 //  eps
 #define epsmin 1.0
@@ -82,14 +82,14 @@ using namespace std;
 
 #define  tau1min 0.1
 #define  tau1max 15.0   
-#define  ddtau1  0.2  
+#define  ddtau1  20.1  
 
 
 // tau2
 
 #define  tau2min 0.0
 #define  tau2max 4.0
-#define  ddtau2  4.0
+#define  ddtau2  5.0
 
 
 //Scale parameter
@@ -883,7 +883,7 @@ LikelihoodParameter::LikelihoodParameter(real _alpha, real _T, real _ap, real _t
 double priori1(double alpha, double T, double tp, double ap, double tau1, double tau2) {
 
 
-	 
+	
 	// return 1.0 / (  pow(T, 2.0));
 
 	//	return  1.0/ pow(alpha,2)  ;
@@ -948,6 +948,77 @@ double Probability1(int i1, int i2, int i3, int i4, int i5, int i6, int i7) {
 
 void computeParams(std::vector<LikelihoodParameter> &params);
 
+
+
+
+float Linter(float x, int ki ,std::vector<float>& xp , int k1, int k2)
+{
+	float s = 1.0;
+	for (int km = k1; km <= k2; ++km)
+	{
+		if (ki != km) { s = s*(x - xp[km]) / (xp[ki] - xp[km]); }
+	}
+	return s;
+}
+
+float interpolation(float x, std::vector<float>& xp, std::vector<float>& yp)
+{
+	int i = 0;
+	int n = xp.size();
+	if (x <= xp[0]) return yp[0];
+	if (x >= xp[n-1]) return yp[n-1];
+
+	for (i = 0; i < n-1; ++i)
+	{
+		if (x >= xp[i] && x <= xp[i + 1])
+		{
+			break;
+		}
+	}
+
+	int k1 = std::max(0, i - 2);
+	int k2 = std::min(n-1, i + 2);
+
+	float y = 0;
+	for (int k = k1; k <= k2; ++k)
+	{
+		y += Linter( x, k , xp, k1,k2) *yp[k];
+	}
+	return y;
+}
+
+std::pair<float,float> max_value(std::vector<float>& xp, std::vector<float>& yp)
+{
+	float ymax = yp[0];
+	int jmax = 0;
+	//encontra o ponto mais alto
+	for (int j = 0; j < yp.size(); ++j)
+	{
+		if (yp[j] > ymax) { ymax = yp[j]; jmax = j; }
+	}
+	int j1 = std::max(0, jmax - 2);
+	int j2 = std::min( jmax + 2, int(yp.size()-1));
+	//procura entorno desse valor o maximo com precisao
+	float x1 = xp[j1];
+	float x2 = xp[j2];
+	float dx = (x2 - x1) / 20.0;
+
+	ymax = yp[0];
+	float xmax = xp[0];
+
+	for (int loop = 0; loop < 3; ++loop)
+	{
+		for (float x = x1; x <= x2; x += dx)
+		{
+			float y = interpolation(x, xp, yp);
+			if (y > ymax) { ymax = y; xmax = x; }
+		}
+		x1 = xmax - 2 * dx;
+		x2 = xmax + 2 * dx;
+		dx = (x2 - x1) / 20.0;
+	}
+	return std::pair<float, float>(xmax,ymax);
+}
 
 int build_Program();
 
@@ -1123,14 +1194,12 @@ int main() {
 
 
 	fmm = fopen("Lat.dat", "w+"); 
-	for (int i1 = 0; i1 < vAlpha.size()-1; i1++)
+	for (int i1 = 0; i1 < vAlpha.size()-1; i1++)	
 	{
 		for (int i2 = 0; i2 < vTemp.size()-1; i2++)
-
 		{
- 
 
-			const double soma = Integra_6n(Lk ,i1, i2, 0, vtp, vtau1, vtau2);
+			const double soma = Integra_6n(Lk ,i1, i2, 0, vtp, vtau1, vtau2)/ predi;
 			fprintf(fmm, "%f %f %g \n", vAlpha[i1], vTemp[i2], soma);
 
 		} 
@@ -1149,16 +1218,9 @@ int main() {
 	fmm = fopen("Lalpha.dat", "w+");
 	for (int i1 = 0; i1 < vAlpha.size()-1; i1++)
 	{
-		double soma = 0; 
-			for (int i2 = 0; i2 < vTemp.size()-1; i2++)
-			  for (int i3 = 0; i3 < vAp.size()-1; i3++)
-				for (int i4 = 0; i4 < vtp.size()-1; i4++)
-					for (int i5 = 0; i5 < vtau1.size()-1; i5++)
-						for (int i6 = 0; i6 < vtau2.size()-1; i6++)							 
-							soma += ddT* ddap * ddtp * ddtau1 * ddtau2 * Lk[i1][i2][i3][i4][i5][i6];
 
 		const double nsoma = Integra_6n(Lk, i1, vTemp, vAp, vtp, vtau1, vtau2)/ predi;
-		fprintf(fmm, "%f  %g %g\n", vAlpha[i1],   nsoma , soma);
+		fprintf(fmm, "%f  %g \n", vAlpha[i1],   nsoma  );
 		if (nsoma > alpha_max)
 		{
 			alpha_max = nsoma;
@@ -1167,22 +1229,68 @@ int main() {
 	}
 	fclose(fmm);
 
+	//constroe a interpolacao de alpha
+
+
+	std::vector<float> yAlpha;
+	std::vector<float> xAlpha;
+	for (int i1 = 0; i1 < vAlpha.size() - 1; i1++)
+	{ 
+		yAlpha.push_back(Integra_6n(Lk, i1, vTemp, vAp, vtp, vtau1, vtau2) / predi);
+	    xAlpha.push_back(vAlpha[i1]);
+	} 
+	auto maxAlpha = max_value(xAlpha, yAlpha);
+
+
+	std::vector<float> yTemp;
+	std::vector<float> xTemp;
+	for (int i2 = 0; i2 < vTemp.size() - 1; i2++)
+	{
+		yTemp.push_back(Integra_6n(Lk, vAlpha, i2, vAp, vtp, vtau1, vtau2) / predi);
+		xTemp.push_back(vTemp[i2]);
+	}
+	auto maxTemp = max_value(xTemp, yTemp);
+
+
+	std::pair<float, float> maxTau1 = std::pair<float, float>(0, 0);
+	if (vtau1.size() > 2)
+	{
+		std::vector<float> yTau1;
+		std::vector<float> xTau1;
+		for (int i5 = 0; i5 < vtau1.size() - 1; i5++)
+		{
+			yTau1.push_back(Integra_6n(Lk, vAlpha, vTemp, vAp, vtp, i5, vtau2) / predi);
+			xTau1.push_back(vtau1[i5]);
+		}
+		maxTau1 = max_value(xTau1, yTau1);
+	}
+
+
+	std::pair<float, float> maxTp = std::pair<float, float>(0, 0);
+	if (vtp.size() > 2)
+	{
+		std::vector<float> yTp;
+		std::vector<float> xTp;
+		for (int i4 = 0; i4 < vtp.size() - 1; i4++)
+		{
+			yTp.push_back(Integra_6n(Lk, vAlpha, vTemp, vAp, i4, vtau1, vtau2) / predi);
+			xTp.push_back(vtp[i4]);
+		}
+		maxTp = max_value(xTp, yTp);
+	}
+
+
+
+
+
+
 	double temp_max = 0;
 	double temp_val = -1;
 	fmm = fopen("LTemp.dat", "w+");	
 	for (int i2 = 0; i2 < vTemp.size()-1; i2++)
-	{
-		double soma = 0;
-		for (int i1 = 0; i1 < vAlpha.size()-1; i1++)
-			for (int i3 = 0; i3 < vAp.size()-1; i3++)
-				for (int i4 = 0; i4 < vtp.size()-1; i4++)
-					for (int i5 = 0; i5 < vtau1.size()-1; i5++)
-						for (int i6 = 0; i6 < vtau2.size()-1; i6++)
-							soma += ddA * ddap * ddtp * ddtau1 * ddtau2 * Lk[i1][i2][i3][i4][i5][i6];
-		
-		
+	{	
 		const double nsoma = Integra_6n(Lk, vAlpha, i2, vAp, vtp, vtau1, vtau2)/ predi;
-		fprintf(fmm, "%f  %g  %g\n", vTemp[i2], nsoma, soma);
+		fprintf(fmm, "%f  %g \n", vTemp[i2], nsoma );
 		if (nsoma > temp_max)
 		{
 			temp_max = nsoma;
@@ -1210,6 +1318,29 @@ int main() {
 	fclose(fmm);
 
 
+
+
+
+
+
+	double tp_max = 0;
+	double tp_val = -1;
+	fmm = fopen("Ltp.dat", "w+");
+	for (int i4 = 0; i4 < vtp.size() - 1; i4++)
+	{
+		const double nsoma = Integra_6n(Lk, vAlpha, vTemp, vAp, i4, vtau1, vtau2) / predi;
+		fprintf(fmm, "%f   %g \n", vtp[i4], nsoma);
+		if (nsoma > tp_max)
+		{
+			tp_max = nsoma;
+			tp_val = vtp[i4];
+		}
+	}
+	fclose(fmm);
+
+
+
+
 	fmm = fopen("parameters.dat", "w+");
 	fprintf(fmm, "Max Likehood Parameter:%g\n alpha %6.2f\n T %6.2f\n Tp %6.2f\nAmpliture %6.2f\n Tau 1 %6.2f\n Tau 2%6.2f \n", max_likelihood_parameter.result,
 		max_likelihood_parameter.alpha, max_likelihood_parameter.T,
@@ -1217,9 +1348,11 @@ int main() {
 		max_likelihood_parameter.ap,
 		max_likelihood_parameter.tau1, max_likelihood_parameter.tau2);
 
-	fprintf(fmm, "best-fit  alpha %f \n", alpha_val);
-	fprintf(fmm, "best-fit  T     %f \n", temp_val);
-	fprintf(fmm, "best-fit  Tau1  %f \n", tau1_val);
+	fprintf(fmm, "best-fit  alpha  %f %f \n", alpha_val, maxAlpha.first);
+	fprintf(fmm, "best-fit  T      %f %f\n", temp_val,  maxTemp.first);
+	fprintf(fmm, "best-fit  Tau1   %f %f\n", tau1_val,  maxTau1.first);
+	fprintf(fmm, "best-fit  Tbust  %f %f\n", tp_val, maxTp.first);
+	fprintf(fmm, "Integration    %g \n", predi);
 	fclose(fmm);
 
 
@@ -1257,7 +1390,7 @@ int main() {
 	{ 
 		for (int i5 = 0; i5 < vtau1.size()-1; i5++)
 		{
-			const double nsoma = Integra_6n(Lk, vAlpha, i2, vAp, vtp, i5, vtau2);
+			const double nsoma = Integra_6n(Lk, vAlpha, i2, vAp, vtp, i5, vtau2)/predi;
 			fprintf(fmm, "%f %f %g  \n", vTemp[i2], vtau1[i5], nsoma );
 
 		}
@@ -1280,28 +1413,28 @@ int main() {
 	fclose(fmm); 
 
 
-	fmm = fopen("temp.dat", "w+");	 
-	{
-		for (double tt = 0; tt < 20; tt += 0.02)
-		{
-			double Te = Temp(tt, max_likelihood_parameter.T, max_likelihood_parameter.ap, max_likelihood_parameter.tp, max_likelihood_parameter.tau1, max_likelihood_parameter.tau2);
-			fprintf(fmm, " %f %f \n", tt, Te);
-		}
-	 
-	}
-	fclose(fmm);
-	
+	//fmm = fopen("temp.dat", "w+");	 
+	//{
+	//	for (double tt = 0; tt < 20; tt += 0.02)
+	//	{
+	//		double Te = Temp(tt, max_likelihood_parameter.T, max_likelihood_parameter.ap, max_likelihood_parameter.tp, max_likelihood_parameter.tau1, max_likelihood_parameter.tau2);
+	//		fprintf(fmm, " %f %f \n", tt, Te);
+	//	}
+	// 
+	//}
+	//fclose(fmm);
+	//
 
-	fmm = fopen("alpha.dat", "w+");
-	{
-		for (double tt = 0; tt < 20; tt += 0.02)
-		{
-			double Te = get_alpha(max_likelihood_parameter.alpha, tt, max_likelihood_parameter.T, max_likelihood_parameter.ap, max_likelihood_parameter.tp, max_likelihood_parameter.tau1, max_likelihood_parameter.tau2);
-			fprintf(fmm, " %f %f \n", tt, Te);
-		}
+	//fmm = fopen("alpha.dat", "w+");
+	//{
+	//	for (double tt = 0; tt < 20; tt += 0.02)
+	//	{
+	//		double Te = get_alpha(max_likelihood_parameter.alpha, tt, max_likelihood_parameter.T, max_likelihood_parameter.ap, max_likelihood_parameter.tp, max_likelihood_parameter.tau1, max_likelihood_parameter.tau2);
+	//		fprintf(fmm, " %f %f \n", tt, Te);
+	//	}
 
-	}
-	fclose(fmm);
+	//}
+	//fclose(fmm);
 
 	return 0;
 

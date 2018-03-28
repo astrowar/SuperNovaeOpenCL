@@ -1,24 +1,58 @@
-set output 'tau12.png'
+set output 'alpha.png'
 set term png  
-set view map
-unset key
-unset surface
- 
-#set style textbox opaque margins  0.5,  0.5 noborder
 
-set cntrparam bspline
-set contour base
-#set cntrparam levels discrete 1e-90,1e-70,1e-60, 1e-58, 1e-56, 1e-55, 1e-54
-set cntrparam levels auto
-
-set pm3d 
-set lmargin at screen 0.1
+set lmargin at screen 0.2
 set rmargin at screen 0.8
 set bmargin at screen 0.2
 set tmargin at screen 0.9
 
-set xlabel "tau 1"
-set ylabel "tau 2"
+set xrange [0.1:30] 
+set xlabel "alpha"
+set ylabel "P"
+set logscale x
+plot   "Lalpha.dat"  w  l notitle
+unset logscale x
 
-splot   "tau12.dat"  w  l 
  
+set output 'temp.png'
+set term png  
+
+set lmargin at screen 0.2
+set rmargin at screen 0.8
+set bmargin at screen 0.2
+set tmargin at screen 0.9
+
+set xlabel "Temperature"
+set ylabel "P"
+set xrange [2:8] 
+
+plot   "Ltemp.dat"  w  l notitle
+
+
+set output 'tau.png'
+set term png  
+
+set lmargin at screen 0.2
+set rmargin at screen 0.8
+set bmargin at screen 0.2
+set tmargin at screen 0.9
+
+set xrange [0.1:15] 
+set xlabel "tau"
+set ylabel "P"
+
+plot   "LTau1.dat"  w  l notitle
+
+set output 'tp.png'
+set term png  
+
+set lmargin at screen 0.2
+set rmargin at screen 0.8
+set bmargin at screen 0.2
+set tmargin at screen 0.9
+
+set xrange [0.1:15] 
+set xlabel "T brust"
+set ylabel "P"
+
+plot   "Ltp.dat"  w  l notitle
