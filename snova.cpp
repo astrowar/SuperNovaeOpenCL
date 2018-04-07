@@ -57,7 +57,7 @@ using namespace std;
 //regiao de calculo da massa dos distibuicoes T
 #define Tmin 2.0
 #define Tmax 8.0
-#define ddT  0.05
+#define ddT  0.1
 
 #define sigma_tp 1.0
 
@@ -70,7 +70,7 @@ using namespace std;
 // alpha
 #define Amin 0.2
 #define Amax 20.0
-#define ddA  0.02
+#define ddA  0.1
 
 //  eps
 #define epsmin 1.0
