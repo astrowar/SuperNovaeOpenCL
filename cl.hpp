@@ -142,6 +142,8 @@
 * \endcode
 *
 */
+size_t   log_size = 0;
+
 #ifndef CL_HPP_
 #define CL_HPP_
 
@@ -5328,7 +5330,7 @@ struct param_traits<detail:: token,param_name>       \
 			void (CL_CALLBACK * notifyFptr)(cl_program, void *) = NULL,
 			void* data = NULL) const
 		{
-			return detail::errHandler(
+			auto r =  detail::errHandler(
 				::clCompileProgram(
 					object_,
 					0,
@@ -5340,6 +5342,8 @@ struct param_traits<detail:: token,param_name>       \
 					notifyFptr,
 					data),
 				__COMPILE_PROGRAM_ERR);
+
+			return r;
 		}
 #endif
 
@@ -5483,6 +5487,25 @@ struct param_traits<detail:: token,param_name>       \
 		if (err != NULL) {
 			*err = error_local;
 		}
+		printf("Link error %i \n",error_local);
+
+		if (error_local != CL_SUCCESS) {
+			// Determine the size of the log
+			 
+			clGetProgramBuildInfo(prog, 0, CL_PROGRAM_BUILD_LOG,0,NULL, &log_size);
+
+			// Allocate memory for the log
+			char *alog = (char *)malloc(log_size);
+
+			// Get the log
+			clGetProgramBuildInfo(prog, 0, CL_PROGRAM_BUILD_LOG, log_size, alog, NULL);
+			
+			// Print the log
+			printf("%s\n", alog);
+		}
+
+
+		 
 
 		return Program(prog);
 	}

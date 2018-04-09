@@ -1,5 +1,5 @@
 
-#pragma OPENCL EXTENSION cl_amd_fp64 : enable
+#pragma OPENCL EXTENSION cl_khr_fp64  : enable
 
 #define real double
 #define number float
@@ -46,7 +46,7 @@ real max(real a, real b);
 #define Dump(  ff , x, x1 , x2 , dx )  for(x = (x1) ; x <= (x2) ;x+=(dx)   ){ printf(">%f %f \n",x, ( ff ) );};
 
 #define H  6.0
-#define NEPS 128
+#define NEPS 256
 
 #define epsmin 0.1
 #define epsmax 80.0 // 50.0
@@ -152,13 +152,13 @@ typedef struct PressSchecter
 number Temp(number tu, number T, PressSchecter tmp) {
 
 	
-	if (tu <= tmp.tp) return T;
-	return 0.0;
+	//if (tu <= tmp.tp) return T;
+	//return 0.0;
 
 	if (tu > tmp.tp)
 	{ 
 		number u = (tu - tmp.tp) / (4.0*tmp.tau1);
-		if (u > 10.0) return 0.0;
+		if (u > 15.0) return 0.0;
 		return  T* exp(-u);
 	}
 	return  T;
@@ -299,8 +299,8 @@ number StepK(number eps) {
  
 real LikelihoodK(number alpha, number T, PressSchecter tmp, real *LMax, __local number eps_value[NEPS], __local number      etabarK_value[NEPS], __local number      noiseK_value[NEPS]) {
 
-	
- 
+
+
 	const number    tk[17] = { 0.0, 0.0, 0.107, 0.303, 0.324, 0.507, 0.686, 1.541, 1.728, 1.915, 9.219, 10.433, 12.439, 17.641, 20.257, 21.355, 23.814 }; // times of events;
 	const number    Ek[17] = { 0.0, 20.0, 13.5, 7.5, 9.2, 12.8, 6.3, 35.4, 21, 19.8, 8.6, 13, 8.9, 6.5, 5.4, 4.6, 6.5 };   // energy of events;
 	const number    Sigmak[17] = { 0.0, 2.9, 3.2, 2.0, 2.7, 2.9, 1.7, 8, 4.2, 3.2, 2.7, 2.6, 1.9, 1.6, 1.4, 1.3, 1.6 }; // standard deviation by events;
@@ -335,12 +335,12 @@ real LikelihoodK(number alpha, number T, PressSchecter tmp, real *LMax, __local 
 
 	soma = 0.0;
 
-	number jddtp =  max(0.01, tmp.tau1 /5.0);
-	number time_end = min(tmp.tp + 3*H *tmp.tau1, timeEnd);
+	number jddtp = max(0.01, tmp.tau1 / 5.0);
+	number time_end = min(tmp.tp + 3 * H *tmp.tau1, timeEnd);
 	termo1 = 0.0;
 
 
-	 number de = (epsmax - epsmin) / NEPS;
+	number de = (epsmax - epsmin) / NEPS;
 	//{
 	//	number Tj = Temp(0, T, tmp); 
 	//	//Integra(termo1, (etabarK(eps)*(Cn*Rcol(eps + Q, alpha, Tj, Mk) + noiseK(eps))), eps, epsmin, epsmax, ddeps);
@@ -380,29 +380,30 @@ real LikelihoodK(number alpha, number T, PressSchecter tmp, real *LMax, __local 
 
 
 
+	number ddtp = tmp.tp / 2.0;
+	 
+	{
+		 
+		for (ti = 0; ti <= tmp.tp; ti = ti + ddtp)
+		{
+			number Tj = Temp(0, T, tmp);
+			number radius = r(0, Tj, tmp);
+			eps = eps_value[0];
+			number y1 = (etabarK_value[0] * (Cn*Rcol(eps, alpha, Tj, Mk, radius) + noiseK_value[0]));
+			for (int i = 0; i < NEPS - 1; ++i)
+			{
+				eps = eps_value[i];
+				//number y1 = (etabarK_value[i] * (Cn*Rcol(eps, alpha, Tj, Mk , radius) + noiseK_value[i]));
+				number y2 = (etabarK_value[i + 1] * (Cn*Rcol(eps + de, alpha, Tj, Mk, radius) + noiseK_value[i + 1]));
+				termo1 += de * (ddtp)* (y1 + y2) / 2.0;
+				y1 = y2;
+			}
 
+			// Integra(termo1, ddtp * etabarK(eps) *(Cn*Rcol(eps, alpha, Tj, Mk) + 1.0 * noiseK(eps)), eps, epsmin, epsmax, ddeps);
 
-	 number ddtp = tmp.tp / 2.0;
-	 for (ti = 0; ti <= tmp.tp ; ti = ti + ddtp)
-	 {
-		 number Tj = Temp(0, T, tmp);
-		 number radius = r(0, Tj, tmp);
-		 eps = eps_value[0];
-		 number y1 = (etabarK_value[0] * (Cn*Rcol(eps, alpha, Tj, Mk, radius) + noiseK_value[0]));
-		 for (int i = 0; i < NEPS-1; ++i)
-		 {
-			 eps = eps_value[i];
-			 //number y1 = (etabarK_value[i] * (Cn*Rcol(eps, alpha, Tj, Mk , radius) + noiseK_value[i]));
-			 number y2 = (etabarK_value[i+1] * (Cn*Rcol(eps+de, alpha, Tj, Mk, radius) + noiseK_value[i+1]));
-			 termo1 += de* (ddtp)* (y1 + y2) / 2.0;
-			 y1 = y2;
-		 }
+		}
 
-		 // Integra(termo1, ddtp * etabarK(eps) *(Cn*Rcol(eps, alpha, Tj, Mk) + 1.0 * noiseK(eps)), eps, epsmin, epsmax, ddeps);
-		  
-	 }
-
-
+	}
 	ddtp = 0.2;
 	//for (ti = tmp.tp ; ti <= max(0* timeK,   (tmp.tp + 4.0*tmp.tau1)) ; ti = ti + ddtp)
 	for (ti = tmp.tp; ti <= timeK; ti = ti + ddtp)
@@ -449,7 +450,7 @@ real LikelihoodK(number alpha, number T, PressSchecter tmp, real *LMax, __local 
 	 
 	//double e_term = -1.0 * delt * termo1 + prod;
 	//soma = exp(e_term);
-	double e_term = -1.0   *delt *  4.0* (termo1)      ;
+	double e_term = -1.0   *delt *  4.5* (termo1)      ;
 	e_term = e_term +  prod;
 	
 	e_term = min(e_term, (double)99.0);
@@ -567,28 +568,30 @@ number LikelihoodIMB(number alpha, number T, PressSchecter tmp, real* LMax, __lo
 	//}
 	//termo1 = termo1 *jddtp;
 
-
+	number ddtp = tmp.tp / 2.0;
 	number de = (epsmax - epsmin) / NEPS;
-	for (ti = 0; ti <= tmp.tp; ti = ti + tmp.tp / 2.0)
-	{
-		number Tj = Temp(0, T, tmp);
-		number radius = r(timb[i], Tj, tmp);
-		eps = eps_value[0];
-		number y1 = (etabarIMB_value[0] * (Cn*Rcol(eps, alpha, Tj, Mk, radius) + noiseIMB_value[0]));
-		for (int i = 0; i < NEPS; ++i)
-		{
-			eps = eps_value[i];
-			//number y1 = (etabarIMB_value[i] * (Cn*Rcol(eps, alpha, Tj, Mk, radius) + noiseIMB_value[i]));
-			number y2 = (etabarIMB_value[i + 1] * (Cn*Rcol(eps + de, alpha, Tj, Mk, radius) + noiseIMB_value[i + 1]));
-			termo1 += de* (tmp.tp / 2.0)* (y1 + y2) / 2.0;
-			y1 = y2;
-			//termo1 += de* tmp.tp / 2.0*(etabarIMB_value[i] * (Cn*Rcol(eps, alpha, Tj, Mimb) + noiseIMB_value[i]));
-		}
 	 
+	{
+		for (ti = 0; ti <= tmp.tp; ti = ti + ddtp)
+		{
+			number Tj = Temp(0, T, tmp);
+			number radius = r(timb[i], Tj, tmp);
+			eps = eps_value[0];
+			number y1 = (etabarIMB_value[0] * (Cn*Rcol(eps, alpha, Tj, Mk, radius) + noiseIMB_value[0]));
+			for (int i = 0; i < NEPS; ++i)
+			{
+				eps = eps_value[i];
+				//number y1 = (etabarIMB_value[i] * (Cn*Rcol(eps, alpha, Tj, Mk, radius) + noiseIMB_value[i]));
+				number y2 = (etabarIMB_value[i + 1] * (Cn*Rcol(eps + de, alpha, Tj, Mk, radius) + noiseIMB_value[i + 1]));
+				termo1 += de * (tmp.tp / 2.0)* (y1 + y2) / 2.0;
+				y1 = y2;
+				//termo1 += de* tmp.tp / 2.0*(etabarIMB_value[i] * (Cn*Rcol(eps, alpha, Tj, Mimb) + noiseIMB_value[i]));
+			}
+
+		}
 	}
 
-
-	number ddtp = 0.2;
+	  ddtp = 0.2;
 	//for (ti = tmp.tp; ti <=  max( 0*timeIMB,  (tmp.tp + 4.0*tmp.tau1)); ti = ti + ddtp)
 	for (ti = tmp.tp; ti <= timeEnd; ti = ti + ddtp)
 	{
@@ -716,8 +719,4 @@ real Likelihood_combined(real alpha, real T, real ap, real tp, real tau1, real t
 
 
 
-kernel void vectorAdd(global const real *inputA, global const real *inputB, global real *output, const real x)
-{
-	 
-	output[get_global_id(0)] = inputA[get_global_id(0)] + inputB[get_global_id(0)] + x;
-}
+ 

@@ -43,7 +43,7 @@ set ylabel "P"
 
 plot   "LTau1.dat"  w  l notitle
 
-set output 'tp.png'
+set output 'tp_log.png'
 set term png  
 
 set lmargin at screen 0.2
@@ -53,8 +53,26 @@ set tmargin at screen 0.9
 set logscale y
 set xrange [0.1:15] 
 set xlabel "T brust"
-set ylabel "P"
+set ylabel "Log P"
 
 plot   "Ltp.dat"  w  l notitle
 
 unset logscale y
+
+
+
+set output 'tp.png'
+set term png  
+
+set lmargin at screen 0.2
+set rmargin at screen 0.8
+set bmargin at screen 0.2
+set tmargin at screen 0.9
+ 
+set xrange [0.1:15] 
+set xlabel "T brust"
+set ylabel "P"
+
+plot   "Ltp.dat"  w  l notitle
+
+ 

@@ -8,7 +8,8 @@
 #include <vector>
 #include <memory>
 #include <algorithm>
- 
+#include <windows.h>
+
 #undef max
 #undef min
 
@@ -108,6 +109,8 @@ cl::Program build_Program(cl::Context context )
 
 	printf("done building program\n");
 	cl_build_status link_status = gpuProgram.getBuildInfo<CL_PROGRAM_BUILD_STATUS>(devices[0]);
+	printf("done building Status %i \n", link_status);
+	Sleep(4000);
 	if (link_status != CL_SUCCESS)
 	{
 		std::cout << "Build Status: " << gpuProgram.getBuildInfo<CL_PROGRAM_BUILD_STATUS>(devices[0]) << std::endl;

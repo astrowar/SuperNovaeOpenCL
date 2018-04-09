@@ -1,12 +1,12 @@
-Max Likehood Parameter:9.67776e-43
- alpha   3.70
- T   3.60
- Tp   5.60
+Max Likehood Parameter:1e-99
+ alpha   0.20
+ T   2.00
+ Tp   0.01
 Ampliture   0.01
  Tau 1   0.10
  Tau 2  0.00 
-best-fit  alpha  2.900000 2.877598 
-best-fit  T      3.500000 3.496798
-best-fit  Tau1   0.100000 0.000000
-best-fit  Tbust  5.600000 5.643197
-Integration    7.00659e-43 
+best-fit  alpha  0.200000 0.200000 
+best-fit  T      2.000000 2.000000
+best-fit  Tau1   0.100000 0.220000
+best-fit  Tbust  0.010000 0.000000
+Integration    5.11319e-98 

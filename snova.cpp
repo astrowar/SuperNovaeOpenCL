@@ -62,9 +62,9 @@ using namespace std;
 #define sigma_tp 1.0
 
 //  tempo
-#define tpmin 0.2 
-#define tpmax 15.3
-#define ddtp  0.2 
+#define tpmin 0.01 
+#define tpmax 0.1
+#define ddtp  1.03 
 
 
 // alpha
@@ -82,7 +82,7 @@ using namespace std;
 
 #define  tau1min 0.1
 #define  tau1max 15.0   
-#define  ddtau1  20.1  
+#define  ddtau1  0.3  
 
 
 // tau2
