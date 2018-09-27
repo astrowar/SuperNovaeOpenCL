@@ -1342,7 +1342,7 @@ int main() {
 
 
 	fmm = fopen("parameters.dat", "w+");
-	fprintf(fmm, "Max Likehood Parameter:%g\n alpha %6.2f\n T %6.2f\n Tp %6.2f\nAmpliture %6.2f\n Tau 1 %6.2f\n Tau 2%6.2f \n", max_likelihood_parameter.result,
+	fprintf(fmm, "Max Likehood Parameter:%g\n alpha %6.2f\n T %6.2f\n Tp %6.2f\nAmplitute %6.2f\n Tau 1 %6.2f\n Tau 2%6.2f \n", max_likelihood_parameter.result,
 		max_likelihood_parameter.alpha, max_likelihood_parameter.T,
 		max_likelihood_parameter.tp,
 		max_likelihood_parameter.ap,
