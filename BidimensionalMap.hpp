@@ -22,7 +22,9 @@ public:
 			val[j]= std::vector<double>(nx);
 			for (size_t i = 0; i < nx; ++i)
 			{
-				val[j][i] = func(x[i], y[j]);
+				auto r0 = x[i];
+				auto r1 = y[j];
+				val[j][i] = func(r0,r1);
 			}
 		}
 	}
@@ -52,10 +54,10 @@ public:
 	double integrate(float min_value)
 	{
 		double s = 0.0;
-		for (auto vy : val)
-			for (auto vx : vy)
+		for (auto &vy : val)
+			for (auto &vx : vy)
 			{
-				if (vx > min_value)
+				if (vx >= min_value)
 				{
 					s = s + vx;
 				}
@@ -70,9 +72,31 @@ public:
 			 throw "only positive define functions";
 		 }
 
-		 double umax = max_value();
+		 double umax = max_value();  //maior Z
+		 double smax = integrate(0.0); //integral de todos os valores >= 0 
 
-		for(double   z = 0.1f * umax ; z< umax ; z = z +  0.25*umax)
+		 double z0 = 0.0;
+		 double z1 = umax;
+		 double zn = umax / 2.0;
+		for(int loop =0; loop < 20;loop++)
+		{
+			zn = 0.5*(z1 + z0); //mid
+			double sn = integrate(zn);
+
+			double dz = 0.25*(z1 - z0);
+
+			if (sn <= percentil*smax)
+			{
+				z1 = zn + dz;
+			}
+			else
+			{
+				z0 = zn- dz ;
+			}
+			printf("Bisec Inner %f  => %f (%f)\n", zn, sn , percentil*smax  );
+		}
+
+		for(double   z = 0.0f * umax ; z< 1.5*umax ; z = z +  0.1*umax)
 		{
 			double s = integrate(z);
 			 printf("Inner %f  => %f \n",z, s);

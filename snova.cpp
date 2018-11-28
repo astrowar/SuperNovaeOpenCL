@@ -60,7 +60,7 @@ using namespace std;
 //regiao de calculo da massa dos distibuicoes T
 #define Tmin 2.0
 #define Tmax 8.0
-#define ddT  0.1
+#define ddT  0.02
 
 #define sigma_tp 1.0
 
@@ -496,17 +496,18 @@ int main() {
 
 	BidimensionalMap bm = BidimensionalMap([&](double x, double y)
 	{
-		auto x0 = vTemp[0];
-		auto y0 = vAlpha[0];
-		auto dx = vTemp[1] - vTemp[0];
-		auto dy = vAlpha[1] - vAlpha[0];
-		int i2 = (x - x0) / dx;
-		int i1 = (y - y0) / dy;
+		const auto x0 = vTemp[0];
+		const auto dx = vTemp[1] - vTemp[0];
+		int i_temp = (x - x0) / dx;
+        i_temp = std::min(i_temp, int(vTemp.size() - 2));
 
-		i1 = std::min(i1, int(vAlpha.size() - 1));
-		i2 = std::min(i2, int(vTemp.size() - 1));
+		const auto y0 = vAlpha[0];
+		const auto dy = vAlpha[1] - vAlpha[0]; 
+		int i_alpha = (y - y0) / dy;
+		i_alpha = std::min(i_alpha, int(vAlpha.size() - 2));		
+	 
 
-		return Integra_6n(Lk, i1, i2, 0, vtp, vtau1, vtau2) / predi;
+		return Integra_6n(Lk, i_alpha, i_temp, 0, vtp, vtau1, vtau2) / predi;
 	}, vTemp, vAlpha);
 
 

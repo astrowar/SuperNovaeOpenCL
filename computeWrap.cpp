@@ -1,24 +1,30 @@
 #define _CRT_SECURE_NO_WARNINGS
 #define CL_USE_DEPRECATED_OPENCL_1_2_APIS
 #define CL_USE_DEPRECATED_OPENCL_2_0_APIS
-#include "cl.hpp"
+
 
  
 #include <iostream>
 #include <vector>
 #include <memory>
 #include <algorithm>
-#include <windows.h>
+#include <cstdio>
+//#include <windows.h>
 
 #undef max
 #undef min
 
+#include "cl.hpp"
+
+using namespace std;
+
 #define real double
 int maxWorkGroupSize = 256;
-size_t maxThreadsSize = 256;
+
+int maxThreadsSize = 256;
 cl::CommandQueue queue;
 
-std::string load_file(const std::string &file_name, size_t max_size = 0x100000)
+std::string load_file(const std::string &file_name, std::size_t max_size = 0x100000)
 {
 	FILE *fp = fopen(file_name.c_str(), "rb");
 	if (!fp)
@@ -28,7 +34,7 @@ std::string load_file(const std::string &file_name, size_t max_size = 0x100000)
 	}
 	char *source = new char[max_size];
 	memset(source, 0, max_size);
-	size_t source_size = fread(source, 1, max_size, fp);
+	const std::size_t source_size = fread(source, 1, max_size, fp);
 	fclose(fp);
 	if (!source_size)
 	{
@@ -45,7 +51,7 @@ cl::Context getContext()
 {
 	std::vector<cl::Platform> platforms;
 	auto err = cl::Platform::get(&platforms);
-	printf("number of platforms: %d\n", platforms.size());
+	printf("number of platforms: %zu\n", platforms.size());
 	if (platforms.size() == 0) {
 		printf("Platform size 0\n");
 	}
@@ -60,7 +66,7 @@ cl::Program build_Program(cl::Context context )
  
 	auto devices = context.getInfo<CL_CONTEXT_DEVICES>();
  
-	printf("number of devices %d\n", devices.size());
+	 printf("number of devices %zu\n", devices.size());
 	  devices[0];
 
 	  //devices[0].getInfo(CL_DEVICE_VENDOR, &maxWorkGroupSize);
@@ -110,7 +116,7 @@ cl::Program build_Program(cl::Context context )
 	printf("done building program\n");
 	cl_build_status link_status = gpuProgram.getBuildInfo<CL_PROGRAM_BUILD_STATUS>(devices[0]);
 	printf("done building Status %i \n", link_status);
-	Sleep(4000);
+	//Sleep(4000);
 	if (link_status != CL_SUCCESS)
 	{
 		std::cout << "Build Status: " << gpuProgram.getBuildInfo<CL_PROGRAM_BUILD_STATUS>(devices[0]) << std::endl;
@@ -132,13 +138,13 @@ cl::Program build_Program(cl::Context context )
 
 
  
-
 struct LikelihoodParameter
 {
 	real alpha, T, ap, tp, tau1, tau2;
 	real result;
 	LikelihoodParameter(real _alpha, real _T, real _ap, real _tp, real _tau1, real _tau2);
 };
+
 
 
 std::vector<std::pair<double,double> > computeTemperature(LikelihoodParameter Lk)
@@ -207,7 +213,7 @@ std::vector<std::pair<double,double> > computeTemperature(LikelihoodParameter Lk
 		 int
 		 >(gpuProgram, "LikelihoodList");
  
-	 int numParams  = params.size();
+	int numParams  = (int)params.size();
  
 	 if (numParams > maxWorkGroupSize)
 	 {
@@ -218,7 +224,7 @@ std::vector<std::pair<double,double> > computeTemperature(LikelihoodParameter Lk
 	 }
 	 int actualWorkGroupSize = std::min(numParams, maxWorkGroupSize);
 
-	 int arraySize = params.size();
+	 int arraySize = (int)params.size();
 	 //std::vector<double> output(numParams, 0xdeadbeef);
 	 std::vector<real> output(arraySize, 1e-99);
 	 cl::Buffer inputABuffer(queue , begin(params), end(params), true);

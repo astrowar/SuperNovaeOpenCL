@@ -142,6 +142,12 @@
 * \endcode
 *
 */
+
+
+#ifndef CL_HPP
+#define CL_HPP
+#include <cstddef>
+
 size_t   log_size = 0;
 
 #ifndef CL_HPP_
@@ -13009,3 +13015,4 @@ struct param_traits<detail:: token,param_name>       \
 } // namespace cl
 
 #endif // CL_HPP_
+#endif // CL_HPP
