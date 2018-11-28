@@ -170,6 +170,7 @@
     <ClCompile Include="computeWrap.cpp" />
     <ClCompile Include="generate_matrix.cpp" />
     <ClCompile Include="IntegrateFunctions.cpp" />
+    <ClCompile Include="MultiDimensionalArray.cpp" />
     <ClCompile Include="snova.cpp" />
     <ClCompile Include="SnovaeOpenCL.cpp" />
   </ItemGroup>
