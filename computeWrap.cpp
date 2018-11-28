@@ -141,10 +141,62 @@ struct LikelihoodParameter
 };
 
 
+std::vector<std::pair<double,double> > computeTemperature(LikelihoodParameter Lk)
+{
+	static cl::Context context = getContext();
+	static cl::Program gpuProgram = build_Program(context);
+
  
+
+	double timeEnd = 25.0; // 25 segundos
+
+	int numPartitions = std::min(1, 512 / maxWorkGroupSize);
+
+	int numSamples = numPartitions * maxWorkGroupSize; //512 pontos
+	int actualWorkGroupSize = std::min(numSamples, maxWorkGroupSize);
+
+	int arraySize = numSamples ;
+
+	std::vector<real> samples(arraySize, 0);
+	for (int i = 0; i < arraySize; ++i) samples[i] = (i*timeEnd) / arraySize;
+
+	std::vector<real> output(arraySize, -9999.0);
+	cl::Buffer inputABuffer(queue, begin(samples), end(samples), true);
+	cl::Buffer outputBuffer(queue, begin(output), end(output), false);
+	cl::Kernel kernel(gpuProgram, "TemperatureList");
+
+	queue.finish();
+
+	kernel.setArg(0, inputABuffer);
+	kernel.setArg(1, outputBuffer);
+	//kernel.setArg(2, Lk);
+	kernel.setArg(2, numSamples);
+	kernel.setArg(3, Lk);
+
+	cl::Event evt;
+	cl_int  err = queue.enqueueNDRangeKernel(kernel, cl::NullRange, cl::NDRange(arraySize), cl::NDRange(actualWorkGroupSize));
+
+	queue.finish();
+	cl::copy(queue, outputBuffer, begin(output), end(output));
+	queue.finish();
+
+	std::vector<std::pair<double, double> > saida_xy;
+	for (int i = 0; i < numSamples; ++i)
+	{		
+		saida_xy.push_back(  std::pair<double,double>(samples[i], output[i]));
+	}
+	//for (auto &xy : saida_xy)
+	//{
+	//	printf("%f %f \n", xy.first,xy.second);
+	//}
+	return saida_xy;
+
+}
 
  void computeParams( std::vector<LikelihoodParameter> &params)
 {
+	 auto xy = computeTemperature(params[0]);
+
 	 static cl::Context context = getContext();
 	 static cl::Program gpuProgram = build_Program(context);
 
@@ -154,10 +206,6 @@ struct LikelihoodParameter
 		 cl::Buffer&,
 		 int
 		 >(gpuProgram, "LikelihoodList");
-
-
-
-
  
 	 int numParams  = params.size();
  
@@ -175,17 +223,10 @@ struct LikelihoodParameter
 	 std::vector<real> output(arraySize, 1e-99);
 	 cl::Buffer inputABuffer(queue , begin(params), end(params), true);
 	 cl::Buffer outputBuffer(queue, begin(output), end(output), false);
-
 	 cl::Kernel kernel(gpuProgram, "LikelihoodList");
-
-	 cl::Event event;
-
-	  
+	 cl::Event event;	  
 	 auto devices = context.getInfo<CL_CONTEXT_DEVICES>();
 	// printf("number of devices %d\n", devices.size());
-	 
-	 
-
 	 //LikeHoodKernel( cl::EnqueueArgs(event, cl::NDRange(arraySize), cl::NDRange(actualWorkGroupSize)), inputABuffer, outputBuffer, numParams );
 
 	 kernel.setArg(0, inputABuffer);

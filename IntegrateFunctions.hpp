@@ -3,6 +3,7 @@
 #define INTEGRATEFUNCTIONS_HPP
 #include <vector>
 #include <cassert>
+#include <assert.h>
 using namespace  std;
 
 //====================================================================================
@@ -169,7 +170,7 @@ template <  typename... Rest>
 double Integra_6n(double ****** y, vector<double> &x, Rest... rest)
 {
 	double soma = 0.0;
-	const int ifinal = x.size();
+	const size_t ifinal = x.size();
 	//if (ifinal == 1) return Integra_5n(y[0], rest...);
 	assert(ifinal > 1);
 	 

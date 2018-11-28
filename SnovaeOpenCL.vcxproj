@@ -23,7 +23,7 @@
     <ProjectGuid>{A1496078-51F7-4572-8285-C809C7EAC2C5}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>SnovaeOpenCL</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -159,19 +159,24 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="BidimensionalMap.hpp" />
     <ClInclude Include="cl.hpp" />
+    <ClInclude Include="generate_matrix.hpp" />
     <ClInclude Include="IntegrateFunctions.hpp" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="computeWrap.cpp" />
+    <ClCompile Include="generate_matrix.cpp" />
     <ClCompile Include="IntegrateFunctions.cpp" />
     <ClCompile Include="snova.cpp" />
     <ClCompile Include="SnovaeOpenCL.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="likehood.cl" />
+    <None Include="likehood.cl">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

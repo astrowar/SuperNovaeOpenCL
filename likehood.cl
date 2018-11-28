@@ -677,7 +677,24 @@ real Likelihood_combined(real alpha, real T, real ap, real tp, real tau1, real t
 	
  
 }
+ 
+kernel void TemperatureList(global const   real *tempos, global real *output, const int nArgs, const LikelihoodParameter parameter)
+{
+	int tid = get_global_id(0);
+	if (tid < nArgs)
+	{
+		 PressSchecter psch = { parameter.ap, parameter.tp, parameter.tau1,parameter.tau2 };
+		 real res = Temp(tempos[tid], parameter.T, psch);
+		output[tid] = res;
+		//printf((__constant char *)">> %g %g tp:%g  tau:%g= %g  \n", tempos[tid], parameter.T, psch.tp, psch.tau1,  res);
 
+	}
+	else
+	{
+		//printf((__constant char *)">> out \n");
+	}
+
+}
 
  kernel void LikelihoodList(global const LikelihoodParameter *inputParams, global real *output,   const int nArgs)
 {
