@@ -21,6 +21,7 @@
 
 #include  "IntegrateFunctions.hpp"
 #include "generate_matrix.hpp"
+#include "MultiDimensionalArray.hpp"
 
 #define NP 400
 
@@ -364,6 +365,15 @@ int main() {
 	for (x = tau1min; x <= tau1max; x = x + ddtau1) vtau1.push_back(x);
 
 	for (x = tau2min; x <= tau2max; x = x + ddtau2) vtau2.push_back(x);
+
+
+
+	auto amap = make_mdarray<3>(vAlpha, vTemp , vtau1);
+	iterator_function([](double r1, double r2,double r3)
+	    {
+		   // printf("it %f %f %f \n", r1,r2,r3);
+	    }, 
+		amap);
 
 
 

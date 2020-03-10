@@ -7,12 +7,17 @@ double**  gen_matrix2(int n, int m)
 	double **d;
 
 	d = (double**)malloc(sizeof(double*)*n);
-
-	for (int i3 = 0; i3 < n; i3++)
+	if (d != nullptr)
 	{
-		d[i3] = (double*)malloc(sizeof(double)*m);
+		for (int i3 = 0; i3 < n; i3++)
+		{
+			 
+		 
+	 
+				d[i3] = (double*)malloc(sizeof(double)*m);;
+		 
+		}
 	}
-
 	return d;
 }
 double*** gen_matrix3(int n, int m, int m2)

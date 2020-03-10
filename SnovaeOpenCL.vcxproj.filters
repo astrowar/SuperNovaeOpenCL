@@ -50,8 +50,8 @@
     <ClCompile Include="generate_matrix.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="MultiDimensionalArray.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="MultiDimensionalArray.hpp">
+      <Filter>Header Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
